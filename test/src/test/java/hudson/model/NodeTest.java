@@ -52,7 +52,6 @@ import java.util.concurrent.Callable;
 
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
-import org.acegisecurity.context.SecurityContextHolder;
 
 import static org.hamcrest.core.StringEndsWith.endsWith;
 import static org.junit.Assert.assertEquals;
@@ -72,6 +71,7 @@ import org.jvnet.hudson.test.RunLoadCounter;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.TestExtension;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  *
@@ -113,7 +113,7 @@ public class NodeTest {
         OfflineCause.UserCause cause;
 
         final User someone = User.get("someone@somewhere.com");
-        ACL.impersonate(someone.impersonate());
+        ACL.impersonate2(someone.impersonate2());
 
         computer.doToggleOffline("original message");
         cause = (UserCause) computer.getOfflineCause();
@@ -121,7 +121,7 @@ public class NodeTest {
         assertEquals(someone, cause.getUser());
 
         final User root = User.get("root@localhost");
-        ACL.impersonate(root.impersonate());
+        ACL.impersonate2(root.impersonate2());
 
         computer.doChangeOfflineCause("new message");
         cause = (UserCause) computer.getOfflineCause();
@@ -137,7 +137,7 @@ public class NodeTest {
         Node node = j.createOnlineSlave();
         final Computer computer = node.toComputer();
         OfflineCause.UserCause cause;
-        try (ACLContext ctxt = ACL.as(Jenkins.ANONYMOUS)) {
+        try (ACLContext ctxt = ACL.as2(Jenkins.ANONYMOUS2)) {
             computer.doToggleOffline("original message");
         }
 
@@ -147,7 +147,7 @@ public class NodeTest {
 
 
         final User root = User.get("root@localhost");
-        try (ACLContext ctxt = ACL.as(root.impersonate())) {
+        try (ACLContext ctxt = ACL.as2(root.impersonate2())) {
             computer.doChangeOfflineCause("new message");
         }
         cause = (UserCause) computer.getOfflineCause();
@@ -167,8 +167,7 @@ public class NodeTest {
         project.setAssignedLabel(label);
         label.reset(); // Make sure cached value is not used
         TagCloud<LabelAtom> cloud = node.getLabelCloud();
-        for(int i =0; i< cloud.size(); i ++){
-            TagCloud.Entry e = cloud.get(i);
+        for (TagCloud.Entry e : cloud) {
             if(e.item.equals(label)){
                 assertEquals("Label label1 should have one tied project.", 1, e.weight, 0);
             }
@@ -194,7 +193,7 @@ public class NodeTest {
 
     @Test
     public void testCanTake() throws Exception {
-        Node node = j.createOnlineSlave();
+        Slave node = j.createOnlineSlave();
         node.setLabelString("label1 label2");
         FreeStyleProject project = j.createFreeStyleProject();
         project.setAssignedLabel(j.jenkins.getLabel("label1"));
@@ -209,7 +208,7 @@ public class NodeTest {
         assertNotNull("Node should not take project which is not assigned to its label.", node.canTake(item3));
         String message = Messages._Node_LabelMissing(node.getNodeName(),j.jenkins.getLabel("notContained")).toString();
         assertEquals("Cause of blockage should be missing label.", message, node.canTake(item3).getShortDescription());
-        ((Slave)node).setMode(Node.Mode.EXCLUSIVE);
+        node.setMode(Node.Mode.EXCLUSIVE);
         assertNotNull("Node should not take project which has null label because it is in exclusive mode.", node.canTake(item2));
         message = Messages._Node_BecauseNodeIsReserved(node.getNodeName()).toString();
         assertEquals("Cause of blockage should be reserved label.", message, node.canTake(item2).getShortDescription());
@@ -227,15 +226,15 @@ public class NodeTest {
         notTake = false;
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(project.getFullName(), user.impersonate())));
         assertNotNull("Node should not take project because user does not have build permission.", node.canTake(item));
-        message = Messages._Node_LackingBuildPermission(item.authenticate().getName(),node.getNodeName()).toString();
+        message = Messages._Node_LackingBuildPermission(item.authenticate2().getName(),node.getNodeName()).toString();
         assertEquals("Cause of blockage should be build permission label.", message, node.canTake(item).getShortDescription());
     }
 
     @Test
     public void testCreatePath() throws Exception {
-        Node node = j.createOnlineSlave();
+        Slave node = j.createOnlineSlave();
         Node node2 = j.createSlave();
-        String absolutePath = ((Slave)node).remoteFS;
+        String absolutePath = node.remoteFS;
         FilePath path = node.createPath(absolutePath);
         assertNotNull("Path should be created.", path);
         assertNotNull("Channel should be set.", path.getChannel());
@@ -253,13 +252,13 @@ public class NodeTest {
         HudsonPrivateSecurityRealm realm = new HudsonPrivateSecurityRealm(false);
         j.jenkins.setSecurityRealm(realm);
         User user = realm.createAccount("John Smith","abcdef");
-        SecurityContextHolder.getContext().setAuthentication(user.impersonate());
+        SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         assertFalse("Current user should not have permission read.", node.hasPermission(Permission.READ));
         auth.add(Computer.CONFIGURE, user.getId());
         assertTrue("Current user should have permission CONFIGURE.", user.hasPermission(Permission.CONFIGURE));
         auth.add(Jenkins.ADMINISTER, user.getId());
         assertTrue("Current user should have permission read, because he has permission administer.", user.hasPermission(Permission.READ));
-        SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS);
+        SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS2);
 
         user = User.get("anonymous");
         assertFalse("Current user should not have permission read, because does not have global permission read and authentication is anonymous.", user.hasPermission(Permission.READ));

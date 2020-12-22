@@ -28,6 +28,9 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNode;
+import com.gargoylesoftware.htmlunit.html.DomNodeList;
+import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlFileInput;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
@@ -80,14 +83,12 @@ import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import jenkins.triggers.ReverseBuildTrigger;
-import org.acegisecurity.Authentication;
-import org.acegisecurity.GrantedAuthority;
 import org.acegisecurity.acls.sid.PrincipalSid;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletHandler;
@@ -131,6 +132,7 @@ import java.util.function.Function;
 import java.util.logging.Level;
 
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasProperty;
@@ -148,6 +150,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Ignore;
 import org.jvnet.hudson.test.LoggerRule;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -442,7 +446,7 @@ public class QueueTest {
         try {
             build = m.scheduleBuild2(0).get(60, TimeUnit.SECONDS);
         } catch (TimeoutException x) {
-            throw (AssertionError) new AssertionError(r.jenkins.getQueue().getItems().toString()).initCause(x);
+            throw new AssertionError(r.jenkins.getQueue().getItems().toString(), x);
         }
         r.assertBuildStatusSuccess(build);
         assertEquals("", build.getBuiltOnStr());
@@ -453,7 +457,7 @@ public class QueueTest {
 
     @Issue("JENKINS-10944")
     @Test public void flyweightTasksBlockedByShutdown() throws Exception {
-        r.jenkins.doQuietDown(true, 0);
+        r.jenkins.doQuietDown(true, 0, null);
         AtomicInteger cnt = new AtomicInteger();
         TestFlyweightTask task = new TestFlyweightTask(cnt, null);
         assertTrue(Queue.isBlockedByShutdown(task));
@@ -658,14 +662,15 @@ public class QueueTest {
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                assertEquals(alice,Jenkins.getAuthentication());
+                assertEquals(alice2, Jenkins.getAuthentication2());
                 return true;
             }
         });
         r.assertBuildStatusSuccess(p.scheduleBuild2(0));
     }
 
-    private static Authentication alice = new UsernamePasswordAuthenticationToken("alice","alice",new GrantedAuthority[0]);
+    private static Authentication alice2 = new UsernamePasswordAuthenticationToken("alice","alice", Collections.emptySet());
+    private static org.acegisecurity.Authentication alice = org.acegisecurity.Authentication.fromSpring(alice2);
 
 
     /**
@@ -684,7 +689,7 @@ public class QueueTest {
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                assertEquals(alice,Jenkins.getAuthentication());
+                assertEquals(alice2, Jenkins.getAuthentication2());
                 return true;
             }
         });
@@ -714,7 +719,7 @@ public class QueueTest {
             if (node.getNodeName().equals(blocked)) {
                 // ACL that allow anyone to do anything except Alice can't build.
                 SparseACL acl = new SparseACL(null);
-                acl.add(new PrincipalSid(alice), Computer.BUILD, false);
+                acl.add(new PrincipalSid(alice2), Computer.BUILD, false);
                 acl.add(new PrincipalSid("anonymous"), Jenkins.ADMINISTER, true);
                 return acl;
             }
@@ -1203,6 +1208,48 @@ public class QueueTest {
         // Before the JENKINS-57805 fix, the test times out because the `NullPointerException` repeatedly thrown from
         // `BrokenAffinityKeyProject.getAffinityKey()` prevents `Queue.maintain()` from completing.
         r.buildAndAssertSuccess(brokenProject);
+    }
+
+    @Test
+    @Issue("SECURITY-1537")
+    public void regularTooltipDisplayedCorrectly() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject();
+
+        String expectedLabel = "\"expected label\"";
+        p.setAssignedLabel(Label.get(expectedLabel));
+
+        p.scheduleBuild2(0);
+
+        String tooltip = buildAndExtractTooltipAttribute();
+        assertThat(tooltip, containsString(expectedLabel.substring(1, expectedLabel.length() - 1)));
+    }
+
+    @Test
+    @Issue("SECURITY-1537")
+    public void preventXssInCauseOfBlocking() throws Exception {
+        FreeStyleProject p = r.createFreeStyleProject();
+        p.setAssignedLabel(Label.get("\"<img/src='x' onerror=alert(123)>xss\""));
+
+        p.scheduleBuild2(0);
+
+        String tooltip = buildAndExtractTooltipAttribute();
+        assertThat(tooltip, not(containsString("<img")));
+        assertThat(tooltip, containsString("&lt;"));
+    }
+
+    private String buildAndExtractTooltipAttribute() throws Exception {
+        JenkinsRule.WebClient wc = r.createWebClient();
+
+        HtmlPage page = wc.goTo("");
+
+        DomElement buildQueue = page.getElementById("buildQueue");
+        DomNodeList<HtmlElement> anchors = buildQueue.getElementsByTagName("a");
+        HtmlAnchor anchorWithTooltip = (HtmlAnchor) anchors.stream()
+                .filter(a -> StringUtils.isNotEmpty(a.getAttribute("tooltip")))
+                .findFirst().orElseThrow(IllegalStateException::new);
+
+        String tooltip = anchorWithTooltip.getAttribute("tooltip");
+        return tooltip;
     }
 
     public static class BrokenAffinityKeyProject extends Project<BrokenAffinityKeyProject, BrokenAffinityKeyBuild> implements TopLevelItem {

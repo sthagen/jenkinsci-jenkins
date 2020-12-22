@@ -32,7 +32,6 @@ import hudson.model.Item;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
-import org.acegisecurity.AccessDeniedException;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -48,6 +47,7 @@ import java.net.URLConnection;
 import java.util.Locale;
 
 import static hudson.Util.fixEmpty;
+import org.springframework.security.access.AccessDeniedException;
 
 /**
  * Base class that provides the framework for doing on-the-fly form field validation.
@@ -523,7 +523,7 @@ public abstract class FormFieldValidator {
         protected void check() throws IOException, ServletException {
             String exe = fixEmpty(request.getParameter("value"));
             FormFieldValidator.Executable self = this;
-            Exception exceptions[] = {null};
+            Exception[] exceptions = {null};
             DOSToUnixPathHelper.iteratePath(exe, new DOSToUnixPathHelper.Helper() {
                 @Override
                 public void ok() {

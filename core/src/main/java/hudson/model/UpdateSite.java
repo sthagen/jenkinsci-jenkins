@@ -66,6 +66,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Stream;
+
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -262,7 +264,7 @@ public class UpdateSite {
      * @since 2.9
      */
     protected UpdateCenter.InstallationJob createInstallationJob(Plugin plugin, UpdateCenter uc, boolean dynamicLoad) {
-        return uc.new InstallationJob(plugin, this, Jenkins.getAuthentication(), dynamicLoad);
+        return uc.new InstallationJob(plugin, this, Jenkins.getAuthentication2(), dynamicLoad);
     }
 
     /**
@@ -392,9 +394,9 @@ public class UpdateSite {
         r.sort(new Comparator<Plugin>() {
             @Override
             public int compare(Plugin plugin, Plugin t1) {
-                final int pop = plugin.popularity.compareTo(t1.popularity);
+                final int pop = t1.popularity.compareTo(plugin.popularity);
                 if (pop != 0) {
-                    return -pop; // highest popularity first
+                    return pop; // highest popularity first
                 }
                 return plugin.getDisplayName().compareTo(plugin.getDisplayName());
             }
@@ -481,7 +483,7 @@ public class UpdateSite {
     
     /**
      * Exposed to get rid of hardcoding of the URL that serves up update-center.json
-     * in Javascript.
+     * in JavaScript.
      */
     @Exported
     public String getUrl() {
@@ -626,11 +628,9 @@ public class UpdateSite {
 
                 // compatibility with update sites that have no separate 'deprecated' top-level entry.
                 // Also do this even if there are deprecations to potentially allow limiting the top-level entry to overridden URLs.
-                if (p.categories != null) {
-                    if (Arrays.asList(p.categories).contains("deprecated")) {
-                        if (!this.deprecations.containsKey(p.name)) {
-                            this.deprecations.put(p.name, new Deprecation(p.wiki));
-                        }
+                if (p.hasCategory("deprecated")) {
+                    if (!this.deprecations.containsKey(p.name)) {
+                        this.deprecations.put(p.name, new Deprecation(p.wiki));
                     }
                 }
             }
@@ -1091,9 +1091,10 @@ public class UpdateSite {
         public final String minimumJavaVersion;
         /**
          * Categories for grouping plugins, taken from labels assigned to wiki page.
-         * Can be null.
+         * Can be {@code null} if the update center does not return categories.
          */
         @Exported
+        @CheckForNull
         public final String[] categories;
 
         /**
@@ -1511,6 +1512,26 @@ public class UpdateSite {
         }
 
         /**
+         * Checks whether a plugin has a desired category
+         * @since TODO
+         */
+        public boolean hasCategory(String category) {
+            if (categories == null) {
+                return false;
+            }
+            // TODO: cache it in a hashset for performance improvements
+            return Arrays.asList(categories).contains(category);
+        }
+
+        /**
+         * Get categories stream for further search.
+         * @since TODO
+         */
+        public Stream<String> getCategoriesStream() {
+            return categories != null ? Arrays.stream(categories) : Stream.empty();
+        }
+
+        /**
          * @since 2.40
          */
         @Restricted(DoNotUse.class)
@@ -1598,7 +1619,7 @@ public class UpdateSite {
         public Future<UpdateCenterJob> deployBackup() {
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             UpdateCenter uc = Jenkins.get().getUpdateCenter();
-            return uc.addJob(uc.new PluginDowngradeJob(this, UpdateSite.this, Jenkins.getAuthentication()));
+            return uc.addJob(uc.new PluginDowngradeJob(this, UpdateSite.this, Jenkins.getAuthentication2()));
         }
         /**
          * Making the installation web bound.

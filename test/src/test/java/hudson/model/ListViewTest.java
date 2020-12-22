@@ -48,12 +48,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import hudson.views.StatusFilter;
 import hudson.views.ViewJobFilter;
 import jenkins.model.Jenkins;
-import org.acegisecurity.Authentication;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -76,6 +76,7 @@ import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.springframework.security.core.Authentication;
 import org.xml.sax.SAXException;
 
 public class ListViewTest {
@@ -351,6 +352,16 @@ public class ListViewTest {
         assertThat(lv.getItems(), containsInAnyOrder(f1, f2, p1, p2, p3, p4));
     }
 
+    @Issue("JENKINS-62661")
+    @Test @LocalData public void migrateStatusFilter() {
+        View v = j.jenkins.getView("testview");
+        assertThat(v, notNullValue());
+        assertThat(v, instanceOf(ListView.class));
+        ListView lv = (ListView) v;
+        StatusFilter sf = lv.getJobFilters().get(StatusFilter.class);
+        assertThat(sf.getStatusFilter(), is(true));
+    }
+
     private static final class AllFilter extends ViewJobFilter {
         @Override
         public List<TopLevelItem> filter(List<TopLevelItem> added, List<TopLevelItem> all, View filteringView) {
@@ -367,8 +378,8 @@ public class ListViewTest {
         }
         @Override public ACL getACL(View item) {
             return new ACL() {
-                @Override public boolean hasPermission(Authentication a, Permission permission) {
-                    return a.equals(SYSTEM);
+                @Override public boolean hasPermission2(Authentication a, Permission permission) {
+                    return a.equals(SYSTEM2);
                 }
             };
         }

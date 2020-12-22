@@ -11,11 +11,8 @@ function initContainerDD(e) {
     return true;
 }
 function prepareDD(e) {
-    var h = $(e);
-    // locate a handle
-    while (h!=null && !h.hasClassName("dd-handle"))
-        h = h.down() ? h.down() : h.next();
-    if (h!=null) {
+    var h = e.querySelector('.dd-handle');
+    if (h !== undefined) {
         var dd = new DragDrop(e);
         dd.setHandleElId(h);
     }
@@ -40,7 +37,7 @@ var DragDrop = function(id, sGroup, config) {
             // set Y constraint to be within the container
             var totalHeight = el.parentNode.offsetHeight;
             var blockHeight = el.offsetHeight;
-            this.setYConstraint(el.offsetTop, totalHeight-blockHeight-el.offsetTop);
+            this.setYConstraint(el.offsetTop, el.offsetTop - totalHeight - blockHeight);
 
             el.style.visibility = "hidden";
 
