@@ -94,6 +94,7 @@ public class SetupWizard extends PageDecorator {
     /**
      * The security token parameter name
      */
+    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
     public static String initialSetupAdminUserName = "admin";
 
     private static final Logger LOGGER = Logger.getLogger(SetupWizard.class.getName());
@@ -733,6 +734,7 @@ public class SetupWizard extends PageDecorator {
                 } else if (req.getRequestURI().equals(req.getContextPath() + "/")) {
                     Jenkins.get().checkPermission(Jenkins.ADMINISTER);
                     chain.doFilter(new HttpServletRequestWrapper(req) {
+                        @Override
                         public String getRequestURI() {
                             return getContextPath() + "/setupWizard/";
                         }
