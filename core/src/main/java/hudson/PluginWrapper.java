@@ -306,7 +306,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * plugin, otherwise {@code false}.
      */
     public boolean hasDependents() {
-        return (isBundled || !dependents.isEmpty());
+        return isBundled || !dependents.isEmpty();
     }
 
     /**
@@ -721,7 +721,6 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     /**
      * Disable a plugin wihout checking any dependency. Only add the disable file.
-     * @throws IOException
      */
     private void disableWithoutCheck() throws IOException {
         try (OutputStream os = Files.newOutputStream(disableFile.toPath())) {
@@ -1068,6 +1067,27 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
             }
         }
         return false;
+    }
+
+    /**
+     * Get list of implied dependencies.
+     * @since TODO
+     */
+    @Restricted(NoExternalUse.class)
+    public @NonNull Set<String> getImpliedDependents() {
+        if (!isDetached()) {
+            return Collections.emptySet();
+        }
+
+        Set<String> implied = new HashSet<>();
+        for (PluginWrapper p : Jenkins.get().getPluginManager().getPlugins()) {
+            for (Dependency dependency : DetachedPluginsUtil.getImpliedDependencies(p.shortName, p.getRequiredCoreVersion())) {
+                if (dependency.shortName.equals(shortName)) {
+                    implied.add(p.shortName);
+                }
+            }
+        }
+        return implied;
     }
 
     /**

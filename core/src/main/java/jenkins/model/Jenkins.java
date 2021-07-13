@@ -286,7 +286,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -380,7 +379,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private transient SetupWizard setupWizard;
 
     /**
-     * Number of executors of the master node.
+     * Number of executors of the built-in node.
      */
     private int numExecutors = 2;
 
@@ -734,7 +733,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private final transient List<Action> actions = new CopyOnWriteArrayList<>();
 
     /**
-     * List of master node properties
+     * List of built-in node-specific node properties
      */
     private DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodeProperties = new DescribableList<>(this);
 
@@ -822,11 +821,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * {@link #get} is what you normally want.
      * <p>In certain rare cases you may have code that is intended to run before Jenkins starts or while Jenkins is being shut down.
      * For those rare cases use this method.
-     * <p>In other cases you may have code that might end up running on a remote JVM and not on the Jenkins master.
+     * <p>In other cases you may have code that might end up running on a remote JVM and not on the Jenkins controller or built-in node.
      * For those cases you really should rewrite your code so that when the {@link Callable} is sent over the remoting channel
      * it can do whatever it needs without ever referring to {@link Jenkins};
-     * for example, gather any information you need on the master side before constructing the callable.
-     * If you must do a runtime check whether you are in the master or agent, use {@link JenkinsJVM} rather than this method,
+     * for example, gather any information you need on the controller side before constructing the callable.
+     * If you must do a runtime check whether you are in the controller or agent, use {@link JenkinsJVM} rather than this method,
      * as merely loading the {@link Jenkins} class file into an agent JVM can cause linkage errors under some conditions.
      * @return The instance. Null if the {@link Jenkins} service has not been started, or was already shut down,
      *         or we are running on an unrelated JVM, typically an agent.
@@ -1023,7 +1022,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             updateComputerList();
 
-            {// master is online now, it's instance must always exist
+            {// built-in node is online now, its instance must always exist
                 final Computer c = toComputer();
                 if(c != null) {
                     for (ComputerListener cl : ComputerListener.all()) {
@@ -1291,10 +1290,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 //    at all when they save their config as the protocol is now opt-out. Any admins that want to
                 //    disable it can do so and will have their preference recorded.
                 // 3. We decide that the protocol needs to be retired. It gets switched back to opt-in. At this point
-                //    the initial opt-in admins, assuming they visited an upgrade to a master with step 2, will
-                //    have the protocol disabled for them. This is what we want. If they didn't upgrade to a master
+                //    the initial opt-in admins, assuming they visited an upgrade to a controller with step 2, will
+                //    have the protocol disabled for them. This is what we want. If they didn't upgrade to a controller
                 //    with step 2, well there is not much we can do to differentiate them from somebody who is upgrading
-                //    from a previous step 3 master and had needed to keep the protocol turned on.
+                //    from a previous step 3 controller and had needed to keep the protocol turned on.
                 //
                 // What we should never do is flip-flop: opt-in -> opt-out -> opt-in -> opt-out as that will basically
                 // clear any preference that an admin has set, but this should be ok as we only ever will be
@@ -1549,7 +1548,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Gets the {@link JobPropertyDescriptor} by name. Primarily used for making them web-visible.
      */
     public JobPropertyDescriptor getJobProperty(String shortClassName) {
-        // combining these two lines triggers javac bug. See issue #610.
+        // combining these two lines triggers javac bug. See issue JENKINS-610
         Descriptor d = findDescriptor(shortClassName, JobPropertyDescriptor.all());
         return (JobPropertyDescriptor) d;
     }
@@ -1661,6 +1660,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 return d;
         }
         return null;
+    }
+
+    protected void updateNewComputer(Node n) {
+        updateNewComputer(n, AUTOMATIC_SLAVE_LAUNCH);
     }
 
     protected void updateComputerList() {
@@ -2686,7 +2689,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         try {
             HudsonFilter filter = HudsonFilter.get(servletContext);
             if (filter == null) {
-                // Fix for #3069: This filter is not necessarily initialized before the servlets.
+                // Fix for JENKINS-3069: This filter is not necessarily initialized before the servlets.
                 // when HudsonFilter does come back, it'll initialize itself.
                 LOGGER.fine("HudsonFilter has not yet been initialized: Can't perform security setup for now");
             } else {
@@ -3761,7 +3764,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private void _cleanUpPersistQueue(List<Throwable> errors) {
         if(getRootDir().exists()) {
             // if we are aborting because we failed to create JENKINS_HOME,
-            // don't try to save. Issue #536
+            // don't try to save. JENKINS-536
             LOGGER.log(Main.isUnitTest ? Level.FINE : Level.INFO, "Persisting build queue");
             try {
                 getQueue().save();
@@ -4044,7 +4047,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Obtains the thread dump of all agents (including the master.)
+     * Obtains the thread dump of all agents (including the controller/built-in node.)
      *
      * <p>
      * Since this is for diagnostics, it has a built-in precautionary measure against hang agents.
@@ -4071,7 +4074,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         long endTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(5);
 
         Map<String,Map<String,String>> r = new HashMap<>();
-        for (Entry<String, Future<Map<String, String>>> e : future.entrySet()) {
+        for (Map.Entry<String, Future<Map<String, String>>> e : future.entrySet()) {
             try {
                 r.put(e.getKey(), e.getValue().get(endTime-System.currentTimeMillis(), TimeUnit.MILLISECONDS));
             } catch (Exception x) {
@@ -4679,7 +4682,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if(qs==null)
             throw new ServletException();
         Cookie cookie = new Cookie("iconSize", Functions.validateIconSize(qs));
-        cookie.setMaxAge(/* ~4 mo. */9999999); // #762
+        cookie.setMaxAge(/* ~4 mo. */9999999); // JENKINS-762
         cookie.setSecure(req.isSecure());
         cookie.setHttpOnly(true);
         rsp.addCookie(cookie);
@@ -4943,7 +4946,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         // TODO SlaveComputer.doSlaveAgentJnlp; there should be an annotation to request unprotected access
-        if ((isAgentJnlpPath(restOfPath, "jenkins") || (isAgentJnlpPath(restOfPath, "slave")))
+        if ((isAgentJnlpPath(restOfPath, "jenkins") || isAgentJnlpPath(restOfPath, "slave"))
             && "true".equals(Stapler.getCurrentRequest().getParameter("encrypt"))) {
             return false;
         }
@@ -4989,8 +4992,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * unique. It does not check the displayName against the displayName of the
      * job that the user is configuring though to prevent a validation warning
      * if the user sets the displayName to what it currently is.
-     * @param displayName
-     * @param currentJobName
      */
     boolean isDisplayNameUnique(String displayName, String currentJobName) {
         Collection<TopLevelItem> itemCollection = items.values();

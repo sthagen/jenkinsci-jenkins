@@ -169,7 +169,7 @@ public class WebAppMain implements ServletContextListener {
                 }
             });
 
-            // quick check to see if we (seem to) have enough permissions to run. (see #719)
+            // quick check to see if we (seem to) have enough permissions to run. (see JENKINS-719)
             JVM jvm;
             try {
                 jvm = new JVM();
@@ -341,7 +341,7 @@ public class WebAppMain implements ServletContextListener {
      */
     private void recordBootAttempt(File home) {
         try (OutputStream o=Files.newOutputStream(BootFailure.getBootFailureFile(home).toPath(), StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
-            o.write((new Date().toString() + System.getProperty("line.separator", "\n")).getBytes());
+            o.write((new Date() + System.getProperty("line.separator", "\n")).getBytes());
         } catch (IOException | InvalidPathException e) {
             LOGGER.log(WARNING, "Failed to record boot attempts",e);
         }
@@ -392,7 +392,7 @@ public class WebAppMain implements ServletContextListener {
                 String value = (String) env.lookup(name);
                 if(value!=null && value.trim().length()>0)
                     return new FileAndDescription(new File(value.trim()),"JNDI/java:comp/env/"+name);
-                // look at one more place. See issue #1314
+                // look at one more place. See issue JENKINS-1314
                 value = (String) iniCtxt.lookup(name);
                 if(value!=null && value.trim().length()>0)
                     return new FileAndDescription(new File(value.trim()),"JNDI/"+name);

@@ -885,7 +885,7 @@ public class Util {
         // Encode control chars and space
         for (i = 0; i < 33; i++) uriMap[i] = true;
         for (int j = 0; j < raw.length(); i++, j++)
-            uriMap[i] = (raw.charAt(j) == ' ');
+            uriMap[i] = raw.charAt(j) == ' ';
         // If we add encodeQuery() just add a 2nd map to encode &+=
         // queryMap[38] = queryMap[43] = queryMap[61] = true;
     }
@@ -1414,7 +1414,7 @@ public class Util {
      * but don't remember it right now.
      *
      * @since 1.204
-     * @deprecated since 2008-05-13. This method is broken (see ISSUE#1666). It should probably
+     * @deprecated since 2008-05-13. This method is broken (see JENKINS-1666). It should probably
      * be removed but I'm not sure if it is considered part of the public API
      * that needs to be maintained for backwards compatibility.
      * Use {@link #encode(String)} instead.
@@ -1449,7 +1449,7 @@ public class Util {
      */
     @CheckForNull
     public static Number tryParseNumber(@CheckForNull String numberStr, @CheckForNull Number defaultNumber) {
-        if ((numberStr == null) || (numberStr.length() == 0)) {
+        if (numberStr == null || numberStr.length() == 0) {
             return defaultNumber;
         }
         try {
