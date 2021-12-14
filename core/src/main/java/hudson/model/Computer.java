@@ -52,7 +52,6 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
 import hudson.slaves.AbstractCloudSlave;
-import hudson.slaves.Cloud;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.NodeProperty;
@@ -78,6 +77,9 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -708,9 +710,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             statusChangeLock.notifyAll();
         }
         if (temporarilyOffline) {
-            Listeners.notify(ComputerListener.class, l -> l.onTemporarilyOffline(this, cause));
+            Listeners.notify(ComputerListener.class, false, l -> l.onTemporarilyOffline(this, cause));
         } else {
-            Listeners.notify(ComputerListener.class, l -> l.onTemporarilyOnline(this));
+            Listeners.notify(ComputerListener.class, false, l -> l.onTemporarilyOnline(this));
         }
     }
 
@@ -1675,12 +1677,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             Matcher m = logfile.matcher(f.getName());
             if (m.matches()) {
                 File newLocation = new File(dir, "logs/slaves/" + m.group(1) + "/slave.log" + Util.fixNull(m.group(2)));
-                newLocation.getParentFile().mkdirs();
-                boolean relocationSuccessful=f.renameTo(newLocation);
-                if (relocationSuccessful) { // The operation will fail if mkdir fails
+                try {
+                    Files.createDirectories(newLocation.getParentFile().toPath());
+                    Files.move(f.toPath(), newLocation.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     LOGGER.log(Level.INFO, "Relocated log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});
-                } else {
-                    LOGGER.log(Level.WARNING, "Cannot relocate log file {0} to {1}",new Object[] {f.getPath(),newLocation.getPath()});
+                } catch (IOException | InvalidPathException e) {
+                    LOGGER.log(Level.WARNING, e, () -> "Cannot relocate log file " + f.getPath() + " to " + newLocation.getPath());
                 }
             } else {
                 assert false;
@@ -1845,11 +1847,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Restricted(NoExternalUse.class) // called by jelly
     public static final Permission[] EXTENDED_READ_AND_CONNECT =
             new Permission[] { EXTENDED_READ, CONNECT };
-
-    // This permission was historically scoped to this class albeit declared in Cloud. While deserializing, Jenkins loads
-    // the scope class to make sure the permission is initialized and registered. since Cloud class is used rather seldom,
-    // it might appear the permission does not exist. Referencing the permission from here to make sure it gets loaded.
-    private static final @Deprecated Permission CLOUD_PROVISION = Cloud.PROVISION;
 
     private static final Logger LOGGER = Logger.getLogger(Computer.class.getName());
 }
