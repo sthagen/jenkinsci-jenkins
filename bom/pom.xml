@@ -161,7 +161,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>jaxen</groupId>
         <artifactId>jaxen</artifactId>
-        <version>1.2.0</version>
+        <version>1.2.0-atlassian-2</version>
       </dependency>
       <dependency>
         <groupId>net.java.dev.jna</groupId>
