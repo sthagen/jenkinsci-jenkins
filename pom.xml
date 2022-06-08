@@ -71,7 +71,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.353</revision>
+    <revision>2.355</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -475,7 +475,7 @@ THE SOFTWARE.
           <arguments>-P release,sign</arguments>
           <!-- work around for a bug in javadoc plugin that causes the release to fail. see MRELEASE-271 -->
           <preparationGoals>clean install</preparationGoals>
-          <goals>-DskipTests -Danimal.sniffer.skip=false javadoc:javadoc deploy</goals>
+          <goals>-DskipTests -Danimal.sniffer.skip=false -Dspotbugs.skip -Dmaven.checkstyle.skip -Dspotless.check.skip generate-resources javadoc:javadoc deploy</goals>
           <pushChanges>false</pushChanges>
           <localCheckout>true</localCheckout>
           <tagNameFormat>jenkins-@{project.version}</tagNameFormat>
