@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.83</version>
+    <version>1.84</version>
     <relativePath />
   </parent>
 
@@ -53,6 +53,7 @@ THE SOFTWARE.
     <module>bom</module>
     <module>websocket/spi</module>
     <module>websocket/jetty9</module>
+    <module>websocket/jetty10</module>
     <module>core</module>
     <module>war</module>
     <module>test</module>
@@ -73,7 +74,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.362</revision>
+    <revision>2.363</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
