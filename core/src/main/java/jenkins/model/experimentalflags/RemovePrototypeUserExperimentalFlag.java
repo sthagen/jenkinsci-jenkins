@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2012, CloudBees, Inc.
+ * Copyright (c) 2023, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,23 +22,33 @@
  * THE SOFTWARE.
  */
 
-package jenkins.model.lazy;
+package jenkins.model.experimentalflags;
 
-/**
- * @author Kohsuke Kawaguchi
- */
-class Build {
-    final int n;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
+import hudson.Extension;
 
-    Build(int n) {
-        this.n = n;
+@Extension
+public final class RemovePrototypeUserExperimentalFlag extends BooleanUserExperimentalFlag {
+
+    public RemovePrototypeUserExperimentalFlag() {
+        super("remove-prototype.flag");
     }
 
-    public void asserts(int n) {
-        assert this.n == n : "expected " + n + " but was " + this.n;
+    @NonNull
+    @Override
+    public Boolean getDefaultValue() {
+        return false;
     }
 
-    @Override public String toString() {
-        return "Build #" + n + " @" + hashCode();
+    @Override
+    public String getDisplayName() {
+        return "Remove Prototype.js";
+    }
+
+    @Nullable
+    @Override
+    public String getShortDescription() {
+        return "Remove Prototype.js from all Jenkins UI pages. This will break anything that depends on Prototype.js.";
     }
 }
