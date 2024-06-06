@@ -61,7 +61,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>commons-lang3-api</artifactId>
-        <version>3.13.0-62.v7d18e55f51e2</version>
+        <version>3.14.0-76.vda_5591261cfe</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps between checks-api, plugin-util-api, and font-awesome-api -->
@@ -147,7 +147,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2211.v29b_b_b_2e79c5a_</version>
+      <version>2216.v8f497401120d</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
