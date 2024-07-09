@@ -126,7 +126,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-step-api</artifactId>
-        <version>657.v03b_e8115821b_</version>
+        <version>678.v3ee58b_469476</version>
       </dependency>
       <dependency>
         <!-- Required by plugin-util-api -->
@@ -326,7 +326,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.main</groupId>
                   <artifactId>remoting</artifactId>
-                  <version>4.12</version>
+                  <version>3085.vc4c6977c075a</version>
                   <type>jar</type>
                   <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
                   <destFileName>remoting-unsupported.jar</destFileName>
