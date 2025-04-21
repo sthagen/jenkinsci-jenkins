@@ -1700,6 +1700,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@eslint/js@npm:9.25.0":
+  version: 9.25.0
+  resolution: "@eslint/js@npm:9.25.0"
+  checksum: 10c0/4a03e2b218e086af89465563151610f30c1ff38e53a4b09fa71d2e7d1f1b37d72e3aacaf2ccb949544b6fcbc12b118162f5edb6e7deee9b3bfd816745fe74dfa
+  languageName: node
+  linkType: hard
+
 "@eslint/object-schema@npm:^2.1.6":
   version: 2.1.6
   resolution: "@eslint/object-schema@npm:2.1.6"
@@ -4352,7 +4359,7 @@ __metadata:
     "@babel/cli": "npm:7.27.0"
     "@babel/core": "npm:7.26.10"
     "@babel/preset-env": "npm:7.26.9"
-    "@eslint/js": "npm:9.24.0"
+    "@eslint/js": "npm:9.25.0"
     babel-loader: "npm:10.0.0"
     clean-webpack-plugin: "npm:4.0.0"
     css-loader: "npm:7.1.2"
@@ -4380,7 +4387,7 @@ __metadata:
     stylelint-checkstyle-reporter: "npm:1.0.0"
     stylelint-config-standard-scss: "npm:14.0.0"
     tippy.js: "npm:6.3.7"
-    webpack: "npm:5.99.5"
+    webpack: "npm:5.99.6"
     webpack-cli: "npm:6.0.1"
     webpack-remove-empty-scripts: "npm:1.0.4"
     window-handle: "npm:1.0.1"
@@ -7074,9 +7081,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.99.5":
-  version: 5.99.5
-  resolution: "webpack@npm:5.99.5"
+"webpack@npm:5.99.6":
+  version: 5.99.6
+  resolution: "webpack@npm:5.99.6"
   dependencies:
     "@types/eslint-scope": "npm:^3.7.7"
     "@types/estree": "npm:^1.0.6"
@@ -7106,7 +7113,7 @@ __metadata:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: 10c0/8f5ebea5e2ae7449774d535862348ee564c100350643e4bdd0683fa07eabc058e88a07b7af7176ee4038d03e5172001daf65c16acebf90bc7ba48c08e25e6792
+  checksum: 10c0/b8b44b16933a0dd83e185ad42f292bbdfa9c47e245cbe786c48520d681556ece9af6ea7fff33059fafdf3d2cd62674715308d70a6f15eda6c6de7e03ef01842a
   languageName: node
   linkType: hard
 
