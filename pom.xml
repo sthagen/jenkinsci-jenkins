@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.137</version>
+    <version>1.138</version>
     <relativePath />
   </parent>
 
@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.524</revision>
+    <revision>2.525</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2025-08-12T13:07:48Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-08-19T13:08:53Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
