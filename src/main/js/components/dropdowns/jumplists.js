@@ -95,7 +95,13 @@ function generateDropdowns() {
           return;
         }
 
-        fetch(Path.combinePath(href, jumplistType))
+        // If requested, only return menu actions rather than top-level app bar actions
+        let query = "";
+        if (element.dataset.jumplistType === "menu") {
+          query = "?menu-only=true";
+        }
+
+        fetch(Path.combinePath(href, jumplistType) + query)
           .then((response) => response.json())
           .then((json) =>
             instance.setContent(
@@ -200,7 +206,7 @@ function mapChildrenItemsToDropdownItems(items) {
     if (item.type === "HEADER") {
       return {
         type: "HEADER",
-        label: item.displayName,
+        displayName: item.displayName,
       };
     }
 
