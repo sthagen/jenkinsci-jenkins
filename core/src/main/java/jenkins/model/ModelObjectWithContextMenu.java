@@ -21,7 +21,9 @@ import java.util.List;
 import jenkins.management.Badge;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
+import jenkins.model.menu.event.ConfirmationEvent;
 import jenkins.model.menu.event.Event;
+import jenkins.model.menu.event.LinkEvent;
 import jenkins.model.menu.event.SplitButtonEvent;
 import jenkins.security.stapler.StaplerNotDispatchable;
 import org.apache.commons.jelly.JellyContext;
@@ -111,7 +113,9 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         }
 
         public ContextMenu add(String url, String text) {
-            items.add(new MenuItem().withUrl(url).withIcon(null).withDisplayName(text));
+            MenuItem menuItem = new MenuItem().withUrl(url).withIcon(null).withDisplayName(text);
+            menuItem.event = LinkEvent.of(menuItem.url);
+            items.add(menuItem);
             return this;
         }
 
@@ -262,10 +266,12 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             if (text != null && icon != null && url != null) {
                 MenuItem item = new MenuItem().withUrl(url).withIcon(icon).withDisplayName(text);
                 item.iconXml = iconXml;
-                item.post = post;
-                item.requiresConfirmation = requiresConfirmation;
                 item.badge = badge;
-                item.message = message;
+                if (requiresConfirmation) {
+                    item.event = ConfirmationEvent.of(message, null, item.url);
+                } else {
+                    item.event = LinkEvent.of(item.url, post ? LinkEvent.LinkEventType.POST : LinkEvent.LinkEventType.GET);
+                }
                 items.add(item);
             }
             return this;
@@ -372,7 +378,6 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * @since 1.504
          */
         @Exported
-        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public boolean post;
 
         /**
@@ -380,7 +385,6 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          * @since 1.512
          */
         @Exported
-        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public boolean requiresConfirmation;
 
         private Badge badge;
@@ -390,8 +394,6 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         private Event event;
 
         private Semantic semantic;
-
-        private String message;
 
         /**
          * The type of menu item
@@ -437,8 +439,9 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         }
 
         @Exported
+        @Deprecated
         public String getMessage() {
-            return message;
+            return null;
         }
 
         public MenuItem() {
