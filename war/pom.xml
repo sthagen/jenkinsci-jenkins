@@ -325,7 +325,7 @@ THE SOFTWARE.
                   <!-- dependency of junit, plugin-util-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>1398.v67030756d3fb_</version>
+                  <version>1413.v2ff1a_5e720fa_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -454,7 +454,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api, junit, plugin-util-api, workflow-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-step-api</artifactId>
-                  <version>710.v3e456cc85233</version>
+                  <version>724.v538c2362b_dfb_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -482,7 +482,7 @@ THE SOFTWARE.
                   <!-- detached after 2.86 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>command-launcher</artifactId>
-                  <version>123.v37cfdc92ef67</version>
+                  <version>134.v025a_5fcf9dea_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
