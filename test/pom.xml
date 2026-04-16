@@ -84,7 +84,7 @@ THE SOFTWARE.
         <!-- RequireUpperBoundDeps between bootstrap5-api and echarts-api -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>font-awesome-api</artifactId>
-        <version>7.2.0-965.ve3840b_696418</version>
+        <version>7.2.0-983.v3f63c34eddb_9</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
@@ -99,7 +99,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>plugin-util-api</artifactId>
-        <version>6.1192.v30fe6e2837ff</version>
+        <version>7.1320.v684dd26fca_19</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
@@ -361,7 +361,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>prism-api</artifactId>
-                  <version>1.30.0-717.vb_f8360844b_53</version>
+                  <version>1.30.0-720.v1eb_7496954b_3</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>prism-api.jpi</destFileName>
@@ -369,7 +369,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>bootstrap5-api</artifactId>
-                  <version>5.3.8-895.v4d0d8e47fea_d</version>
+                  <version>5.3.8-1024.v127320880c60</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>bootstrap5-api.jpi</destFileName>
