@@ -127,7 +127,7 @@ THE SOFTWARE.
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1399.ve6a_66547f6e1</version>
+        <version>1402.v94c9ce464861</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -192,7 +192,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2557.v6317fc67b_811</version>
+      <version>2565.vd1eb_7c961d1b_</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -256,7 +256,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
-      <version>3.2.9</version>
+      <version>3.2.10</version>
       <scope>test</scope>
     </dependency>
     <dependency>
