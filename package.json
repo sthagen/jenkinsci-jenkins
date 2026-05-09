@@ -25,7 +25,7 @@
   "devDependencies": {
     "@babel/cli": "7.28.6",
     "@babel/core": "7.29.0",
-    "@babel/preset-env": "7.29.3",
+    "@babel/preset-env": "7.29.5",
     "@eslint/js": "10.0.1",
     "babel-loader": "10.1.1",
     "clean-webpack-plugin": "4.0.0",
@@ -45,7 +45,7 @@
     "sass": "1.99.0",
     "sass-loader": "16.0.7",
     "style-loader": "4.0.0",
-    "stylelint": "17.9.1",
+    "stylelint": "17.11.0",
     "stylelint-checkstyle-reporter": "1.1.1",
     "stylelint-config-standard-scss": "17.0.0",
     "webpack": "5.106.2",
